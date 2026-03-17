@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>運彩賽事分析｜Future Sports Intel</title>
+    <meta
+      name="description"
+      content="球類運動賽事分析儀表板：自動抓取賽事與球員資料，提供勝負機率與進球分佈（僅供資訊參考）。"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="bg" aria-hidden="true"></div>
+
+    <header class="top">
+      <div class="brand">
+        <div class="brand__mark" aria-hidden="true"></div>
+        <div class="brand__text">
+          <div class="brand__title">Future Sports Intel</div>
+          <div class="brand__sub">台灣運彩可投注球類｜賽事分析儀表板</div>
+        </div>
+      </div>
+
+      <div class="status" id="status">
+        <span class="status__dot" aria-hidden="true"></span>
+        <span class="status__text">準備中…</span>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="panel panel--controls" aria-label="控制台">
+        <div class="panel__head">
+          <h2 class="panel__title">控制台</h2>
+          <div class="panel__meta">
+            <span class="pill" id="pillProvider">資料源：—</span>
+            <span class="pill" id="pillCache">快取：—</span>
+          </div>
+        </div>
+
+        <div class="grid grid--controls">
+          <label class="field">
+            <span class="field__label">運動</span>
+            <select id="sportSelect" class="field__control">
+              <option value="Soccer" selected>足球</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">聯盟</span>
+            <select id="leagueSelect" class="field__control"></select>
+          </label>
+
+          <label class="field field--wide">
+            <span class="field__label">賽事</span>
+            <select id="matchSelect" class="field__control"></select>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn--primary" id="btnSync" type="button">
+            重新同步資料
+          </button>
+          <button class="btn" id="btnUseCache" type="button">使用本機快取</button>
+          <button class="btn" id="btnClearCache" type="button">清除快取</button>
+        </div>
+
+        <details class="advanced" id="advanced">
+          <summary>進階設定（通常不需要）</summary>
+          <div class="grid grid--advanced">
+            <label class="field">
+              <span class="field__label">TheSportsDB API Key</span>
+              <input
+                id="apiKeyInput"
+                class="field__control"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="預設：3（若失敗再改）"
+              />
+            </label>
+            <label class="field">
+              <span class="field__label">近況場次 N</span>
+              <input
+                id="formNInput"
+                class="field__control"
+                type="number"
+                min="3"
+                max="20"
+                step="1"
+                value="8"
+              />
+            </label>
+            <label class="field">
+              <span class="field__label">主場加權</span>
+              <input
+                id="homeAdvInput"
+                class="field__control"
+                type="number"
+                min="0"
+                max="0.35"
+                step="0.01"
+                value="0.12"
+              />
+            </label>
+          </div>
+          <div class="hint">
+            提示：為了避免在瀏覽器暴露你的 API Key，本網站推薦用本機腳本產生
+            <span class="mono">leagueCache.js</span> 來離線顯示資料。若你允許我開啟網路權限，我可以協助更新快取。
+          </div>
+        </details>
+      </section>
+
+      <section class="panel panel--results" aria-label="分析結果">
+        <div class="panel__head">
+          <h2 class="panel__title">分析結果</h2>
+          <div class="panel__meta">
+            <span class="pill" id="pillUpdated">更新：—</span>
+          </div>
+        </div>
+
+        <div class="hero" id="hero">
+          <div class="hero__teams">
+            <div class="teamcard" id="homeCard">
+              <div class="teamcard__name" id="homeName">—</div>
+              <div class="teamcard__meta" id="homeMeta">—</div>
+            </div>
+            <div class="vs" aria-hidden="true">VS</div>
+            <div class="teamcard" id="awayCard">
+              <div class="teamcard__name" id="awayName">—</div>
+              <div class="teamcard__meta" id="awayMeta">—</div>
+            </div>
+          </div>
+
+          <div class="kpis">
+            <div class="kpi">
+              <div class="kpi__label">主勝</div>
+              <div class="kpi__value" id="pHome">—%</div>
+              <div class="bar">
+                <div class="bar__fill" id="barHome" style="width: 0%"></div>
+              </div>
+            </div>
+            <div class="kpi">
+              <div class="kpi__label">和局</div>
+              <div class="kpi__value" id="pDraw">—%</div>
+              <div class="bar">
+                <div class="bar__fill" id="barDraw" style="width: 0%"></div>
+              </div>
+            </div>
+            <div class="kpi">
+              <div class="kpi__label">客勝</div>
+              <div class="kpi__value" id="pAway">—%</div>
+              <div class="bar">
+                <div class="bar__fill" id="barAway" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid--results">
+          <div class="panel panel--sub">
+            <div class="panel__head panel__head--sub">
+              <h3 class="panel__title panel__title--sub">進球分佈（總進球）</h3>
+              <span class="pill pill--muted">Poisson 近似</span>
+            </div>
+            <div class="dist" id="goalDist"></div>
+          </div>
+
+          <div class="panel panel--sub">
+            <div class="panel__head panel__head--sub">
+              <h3 class="panel__title panel__title--sub">近況摘要</h3>
+              <span class="pill pill--muted">近 N 場</span>
+            </div>
+            <div class="form" id="formSummary">—</div>
+            <div class="formgrid" id="formGrid"></div>
+          </div>
+        </div>
+
+        <div class="panel panel--sub">
+          <div class="panel__head panel__head--sub">
+              <h3 class="panel__title panel__title--sub">球員成績（優先用賽季/官方統計，缺漏時退回事件彙整）</h3>
+            <span class="pill pill--muted">資料源缺漏時可能為 0</span>
+          </div>
+
+          <div class="tables">
+            <div class="tablewrap">
+              <div class="tabletitle" id="homeTableTitle">主隊</div>
+              <table class="table" id="homePlayers">
+                <thead>
+                  <tr>
+                    <th>球員</th>
+                    <th>位置</th>
+                    <th class="num">進球</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <div class="tablewrap">
+              <div class="tabletitle" id="awayTableTitle">客隊</div>
+              <table class="table" id="awayPlayers">
+                <thead>
+                  <tr>
+                    <th>球員</th>
+                    <th>位置</th>
+                    <th class="num">進球</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="footnote">
+          <p>
+            免責：本頁提供的是「資料統計 + 簡化模型」推估結果，可能因資料缺漏、聯盟資訊不完整、傷停等因素而偏離實際。請理性投注、量力而為。
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bottom">
+      <div class="bottom__left">
+        <span class="mono">index.html</span> · <span class="mono">style.css</span> ·
+        <span class="mono">app.js</span>
+      </div>
+      <div class="bottom__right">建議流程：用腳本更新快取 → 離線開啟頁面</div>
+    </footer>
+
+    <script src="leagueCache.js"></script>
+    <script src="app.js" defer></script>
+  </body>
+</html>
