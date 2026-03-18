@@ -444,6 +444,38 @@ select.field__control {
   gap: 10px;
 }
 
+.insights {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.insight {
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 12px;
+}
+
+.insight__label {
+  color: var(--muted2);
+  font-size: 12px;
+}
+
+.insight__value {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.insight__meta {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .kpi {
   border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -491,6 +523,85 @@ select.field__control {
   padding: 12px 14px 14px;
   display: grid;
   gap: 10px;
+}
+
+.chips {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 14px 2px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 7px 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.chip__tone {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--c1);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.18);
+}
+
+.chip--home .chip__tone {
+  background: var(--c3);
+  box-shadow: 0 0 16px rgba(24, 255, 183, 0.2);
+}
+
+.chip--away .chip__tone {
+  background: var(--c2);
+  box-shadow: 0 0 16px rgba(155, 92, 255, 0.2);
+}
+
+.chip--neutral .chip__tone {
+  background: var(--warn);
+  box-shadow: 0 0 16px rgba(255, 204, 0, 0.2);
+}
+
+.scorelines {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  padding: 10px 14px 14px;
+}
+
+.scoreline {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px 12px;
+}
+
+.scoreline__label {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+}
+
+.scoreline__prob {
+  color: var(--muted);
+  font-size: 12px;
+  font-family: var(--mono);
+}
+
+.scoreline__rank {
+  color: var(--muted2);
+  font-size: 11px;
 }
 
 .distrow {
@@ -655,6 +766,9 @@ select.field__control {
   .kpis {
     grid-template-columns: 1fr;
   }
+  .insights {
+    grid-template-columns: 1fr;
+  }
   .grid--results {
     grid-template-columns: 1fr;
   }
@@ -668,4 +782,3 @@ select.field__control {
     display: none;
   }
 }
-

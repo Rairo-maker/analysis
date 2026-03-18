@@ -154,9 +154,36 @@
               </div>
             </div>
           </div>
+
+          <div class="insights" id="insights">
+            <div class="insight">
+              <div class="insight__label">預測比分</div>
+              <div class="insight__value" id="projectedScore">—</div>
+              <div class="insight__meta" id="projectedScoreMeta">—</div>
+            </div>
+            <div class="insight">
+              <div class="insight__label">模型信心</div>
+              <div class="insight__value" id="confidenceLabel">—</div>
+              <div class="insight__meta" id="confidenceMeta">—</div>
+            </div>
+            <div class="insight">
+              <div class="insight__label">資料品質</div>
+              <div class="insight__value" id="sampleLabel">—</div>
+              <div class="insight__meta" id="sampleMeta">—</div>
+            </div>
+          </div>
         </div>
 
         <div class="grid grid--results">
+          <div class="panel panel--sub">
+            <div class="panel__head panel__head--sub">
+              <h3 class="panel__title panel__title--sub">模型重點</h3>
+              <span class="pill pill--muted">主客場 + 對戰 + 近況</span>
+            </div>
+            <div class="chips" id="edgeChips"></div>
+            <div class="scorelines" id="scorelines"></div>
+          </div>
+
           <div class="panel panel--sub">
             <div class="panel__head panel__head--sub">
               <h3 class="panel__title panel__title--sub">進球分佈（總進球）</h3>
