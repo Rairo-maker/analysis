@@ -4,6 +4,6 @@
   "private": true,
   "description": "Sports analysis dashboard with Gemini proxy",
   "scripts": {
-    "start": "node server/openai-proxy.js"
+    "start": "node server/ai-proxy.js"
   }
 }

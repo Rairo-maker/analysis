@@ -158,7 +158,7 @@
     }
     if (UI.btnAiAnalyze) UI.btnAiAnalyze.disabled = false;
     if (UI.btnAiCopy) UI.btnAiCopy.disabled = true;
-    setAiState("idle", "GPT Ready");
+    setAiState("idle", "AI Ready");
   }
 
   function showAiResult(text) {
@@ -1074,7 +1074,7 @@
           setAiState("loading", "AI Thinking...");
           if (UI.aiPlaceholder) {
             UI.aiPlaceholder.hidden = false;
-            UI.aiPlaceholder.textContent = "GPT is analyzing the current match...";
+            UI.aiPlaceholder.textContent = "AI is analyzing the current match...";
           }
           if (UI.aiContent) {
             UI.aiContent.hidden = true;

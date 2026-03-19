@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>運彩賽事分析｜Future Sports Intel</title>
+    <title>Future Sports Intel | Football Match Analysis</title>
     <meta
       name="description"
-      content="球類運動賽事分析儀表板：自動抓取賽事與球員資料，提供勝負機率與進球分佈（僅供資訊參考）。"
+      content="Futuristic football match analysis dashboard with win probability, projected score, goal distribution, player data, and AI commentary."
     />
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -18,55 +18,53 @@
         <div class="brand__mark" aria-hidden="true"></div>
         <div class="brand__text">
           <div class="brand__title">Future Sports Intel</div>
-          <div class="brand__sub">台灣運彩可投注球類｜賽事分析儀表板</div>
+          <div class="brand__sub">Taiwan sports lottery football analysis dashboard</div>
         </div>
       </div>
 
       <div class="status" id="status">
         <span class="status__dot" aria-hidden="true"></span>
-        <span class="status__text">準備中…</span>
+        <span class="status__text">Preparing</span>
       </div>
     </header>
 
     <main class="shell">
-      <section class="panel panel--controls" aria-label="控制台">
+      <section class="panel panel--controls" aria-label="Analysis controls">
         <div class="panel__head">
-          <h2 class="panel__title">控制台</h2>
+          <h2 class="panel__title">Analysis Controls</h2>
           <div class="panel__meta">
-            <span class="pill" id="pillProvider">資料源：—</span>
-            <span class="pill" id="pillCache">快取：—</span>
+            <span class="pill" id="pillProvider">Provider: -</span>
+            <span class="pill" id="pillCache">Cache: -</span>
           </div>
         </div>
 
         <div class="grid grid--controls">
           <label class="field">
-            <span class="field__label">運動</span>
+            <span class="field__label">Sport</span>
             <select id="sportSelect" class="field__control">
-              <option value="Soccer" selected>足球</option>
+              <option value="Soccer" selected>Football</option>
             </select>
           </label>
 
           <label class="field">
-            <span class="field__label">聯盟</span>
+            <span class="field__label">League</span>
             <select id="leagueSelect" class="field__control"></select>
           </label>
 
           <label class="field field--wide">
-            <span class="field__label">賽事</span>
+            <span class="field__label">Match</span>
             <select id="matchSelect" class="field__control"></select>
           </label>
         </div>
 
         <div class="actions">
-          <button class="btn btn--primary" id="btnSync" type="button">
-            重新同步資料
-          </button>
-          <button class="btn" id="btnUseCache" type="button">使用本機快取</button>
-          <button class="btn" id="btnClearCache" type="button">清除快取</button>
+          <button class="btn btn--primary" id="btnSync" type="button">Sync Latest Data</button>
+          <button class="btn" id="btnUseCache" type="button">Use Local Cache</button>
+          <button class="btn" id="btnClearCache" type="button">Clear Cache</button>
         </div>
 
         <details class="advanced" id="advanced">
-          <summary>進階設定（通常不需要）</summary>
+          <summary>Advanced Settings</summary>
           <div class="grid grid--advanced">
             <label class="field">
               <span class="field__label">TheSportsDB API Key</span>
@@ -75,11 +73,11 @@
                 class="field__control"
                 inputmode="numeric"
                 autocomplete="off"
-                placeholder="預設：3（若失敗再改）"
+                placeholder="Default uses 3; enter your own key if needed"
               />
             </label>
             <label class="field">
-              <span class="field__label">近況場次 N</span>
+              <span class="field__label">Recent Form Sample N</span>
               <input
                 id="formNInput"
                 class="field__control"
@@ -91,7 +89,7 @@
               />
             </label>
             <label class="field">
-              <span class="field__label">主場加權</span>
+              <span class="field__label">Home Advantage</span>
               <input
                 id="homeAdvInput"
                 class="field__control"
@@ -104,51 +102,51 @@
             </label>
           </div>
           <div class="hint">
-            提示：為了避免在瀏覽器暴露你的 API Key，本網站推薦用本機腳本產生
-            <span class="mono">leagueCache.js</span> 來離線顯示資料。若你允許我開啟網路權限，我可以協助更新快取。
+            If syncing fails, the app falls back to local cache or built-in data. For production, manage keys and data
+            through a backend proxy or generated <span class="mono">leagueCache.js</span>.
           </div>
         </details>
       </section>
 
-      <section class="panel panel--results" aria-label="分析結果">
+      <section class="panel panel--results" aria-label="Analysis results">
         <div class="panel__head">
-          <h2 class="panel__title">分析結果</h2>
+          <h2 class="panel__title">Analysis Results</h2>
           <div class="panel__meta">
-            <span class="pill" id="pillUpdated">更新：—</span>
+            <span class="pill" id="pillUpdated">Updated: -</span>
           </div>
         </div>
 
         <div class="hero" id="hero">
           <div class="hero__teams">
             <div class="teamcard" id="homeCard">
-              <div class="teamcard__name" id="homeName">—</div>
-              <div class="teamcard__meta" id="homeMeta">—</div>
+              <div class="teamcard__name" id="homeName">-</div>
+              <div class="teamcard__meta" id="homeMeta">-</div>
             </div>
             <div class="vs" aria-hidden="true">VS</div>
             <div class="teamcard" id="awayCard">
-              <div class="teamcard__name" id="awayName">—</div>
-              <div class="teamcard__meta" id="awayMeta">—</div>
+              <div class="teamcard__name" id="awayName">-</div>
+              <div class="teamcard__meta" id="awayMeta">-</div>
             </div>
           </div>
 
           <div class="kpis">
             <div class="kpi">
-              <div class="kpi__label">主勝</div>
-              <div class="kpi__value" id="pHome">—%</div>
+              <div class="kpi__label">Home Win</div>
+              <div class="kpi__value" id="pHome">-</div>
               <div class="bar">
                 <div class="bar__fill" id="barHome" style="width: 0%"></div>
               </div>
             </div>
             <div class="kpi">
-              <div class="kpi__label">和局</div>
-              <div class="kpi__value" id="pDraw">—%</div>
+              <div class="kpi__label">Draw</div>
+              <div class="kpi__value" id="pDraw">-</div>
               <div class="bar">
                 <div class="bar__fill" id="barDraw" style="width: 0%"></div>
               </div>
             </div>
             <div class="kpi">
-              <div class="kpi__label">客勝</div>
-              <div class="kpi__value" id="pAway">—%</div>
+              <div class="kpi__label">Away Win</div>
+              <div class="kpi__value" id="pAway">-</div>
               <div class="bar">
                 <div class="bar__fill" id="barAway" style="width: 0%"></div>
               </div>
@@ -157,19 +155,19 @@
 
           <div class="insights" id="insights">
             <div class="insight">
-              <div class="insight__label">預測比分</div>
-              <div class="insight__value" id="projectedScore">—</div>
-              <div class="insight__meta" id="projectedScoreMeta">—</div>
+              <div class="insight__label">Projected Score</div>
+              <div class="insight__value" id="projectedScore">-</div>
+              <div class="insight__meta" id="projectedScoreMeta">-</div>
             </div>
             <div class="insight">
-              <div class="insight__label">模型信心</div>
-              <div class="insight__value" id="confidenceLabel">—</div>
-              <div class="insight__meta" id="confidenceMeta">—</div>
+              <div class="insight__label">Model Confidence</div>
+              <div class="insight__value" id="confidenceLabel">-</div>
+              <div class="insight__meta" id="confidenceMeta">-</div>
             </div>
             <div class="insight">
-              <div class="insight__label">資料品質</div>
-              <div class="insight__value" id="sampleLabel">—</div>
-              <div class="insight__meta" id="sampleMeta">—</div>
+              <div class="insight__label">Sample Size</div>
+              <div class="insight__value" id="sampleLabel">-</div>
+              <div class="insight__meta" id="sampleMeta">-</div>
             </div>
           </div>
         </div>
@@ -177,8 +175,8 @@
         <div class="grid grid--results">
           <div class="panel panel--sub">
             <div class="panel__head panel__head--sub">
-              <h3 class="panel__title panel__title--sub">模型重點</h3>
-              <span class="pill pill--muted">主客場 + 對戰 + 近況</span>
+              <h3 class="panel__title panel__title--sub">Model Highlights</h3>
+              <span class="pill pill--muted">Edge, head-to-head, and recent form</span>
             </div>
             <div class="chips" id="edgeChips"></div>
             <div class="scorelines" id="scorelines"></div>
@@ -186,18 +184,18 @@
 
           <div class="panel panel--sub">
             <div class="panel__head panel__head--sub">
-              <h3 class="panel__title panel__title--sub">進球分佈（總進球）</h3>
-              <span class="pill pill--muted">Poisson 近似</span>
+              <h3 class="panel__title panel__title--sub">Total Goals Distribution</h3>
+              <span class="pill pill--muted">Poisson model</span>
             </div>
             <div class="dist" id="goalDist"></div>
           </div>
 
           <div class="panel panel--sub">
             <div class="panel__head panel__head--sub">
-              <h3 class="panel__title panel__title--sub">近況摘要</h3>
-              <span class="pill pill--muted">近 N 場</span>
+              <h3 class="panel__title panel__title--sub">Recent Form</h3>
+              <span class="pill pill--muted">Last N matches</span>
             </div>
-            <div class="form" id="formSummary">—</div>
+            <div class="form" id="formSummary">-</div>
             <div class="formgrid" id="formGrid"></div>
           </div>
         </div>
@@ -205,7 +203,7 @@
         <div class="panel panel--sub">
           <div class="panel__head panel__head--sub">
             <h3 class="panel__title panel__title--sub">AI Analysis</h3>
-            <span class="pill pill--muted" id="aiStatusPill">GPT Ready</span>
+            <span class="pill pill--muted" id="aiStatusPill">AI Ready</span>
           </div>
           <div class="ai-actions">
             <button class="btn btn--primary" id="btnAiAnalyze" type="button">Run AI Analysis</button>
@@ -213,30 +211,31 @@
           </div>
           <div class="ai-box" id="aiBox">
             <div class="ai-box__placeholder" id="aiPlaceholder">
-              AI summary will appear here after you click Run AI Analysis.
+              AI analysis will appear here after you click Run AI Analysis.
             </div>
             <div class="ai-box__content" id="aiContent" hidden></div>
           </div>
           <div class="ai-footnote" id="aiFootnote">
-            Source: current page model inputs and cached match data. Refresh data before use. This is an analytical reference, not guaranteed advice.
+            Source: current page model inputs and cached match data. Please refresh data before use. This is analytical
+            reference content and does not guarantee actual results.
           </div>
         </div>
 
         <div class="panel panel--sub">
           <div class="panel__head panel__head--sub">
-              <h3 class="panel__title panel__title--sub">球員成績（優先用賽季/官方統計，缺漏時退回事件彙整）</h3>
-            <span class="pill pill--muted">資料源缺漏時可能為 0</span>
+            <h3 class="panel__title panel__title--sub">Player Data</h3>
+            <span class="pill pill--muted">Cache first, official data when available</span>
           </div>
 
           <div class="tables">
             <div class="tablewrap">
-              <div class="tabletitle" id="homeTableTitle">主隊</div>
+              <div class="tabletitle" id="homeTableTitle">Home Players</div>
               <table class="table" id="homePlayers">
                 <thead>
                   <tr>
-                    <th>球員</th>
-                    <th>位置</th>
-                    <th class="num">進球</th>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th class="num">Goals</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
@@ -244,13 +243,13 @@
             </div>
 
             <div class="tablewrap">
-              <div class="tabletitle" id="awayTableTitle">客隊</div>
+              <div class="tabletitle" id="awayTableTitle">Away Players</div>
               <table class="table" id="awayPlayers">
                 <thead>
                   <tr>
-                    <th>球員</th>
-                    <th>位置</th>
-                    <th class="num">進球</th>
+                    <th>Player</th>
+                    <th>Position</th>
+                    <th class="num">Goals</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
@@ -260,9 +259,8 @@
         </div>
 
         <div class="footnote">
-          <p>
-            免責：本頁提供的是「資料統計 + 簡化模型」推估結果，可能因資料缺漏、聯盟資訊不完整、傷停等因素而偏離實際。請理性投注、量力而為。
-          </p>
+          This site currently uses weighted heuristics plus a Poisson distribution for numeric analysis. AI is used only
+          for explanation and summary, not for changing the underlying win probability model.
         </div>
       </section>
     </main>
@@ -272,7 +270,7 @@
         <span class="mono">index.html</span> · <span class="mono">style.css</span> ·
         <span class="mono">app.js</span>
       </div>
-      <div class="bottom__right">建議流程：用腳本更新快取 → 離線開啟頁面</div>
+      <div class="bottom__right">If sync fails, the app falls back to cache or built-in data.</div>
     </footer>
 
     <script src="leagueCache.js"></script>

@@ -13,7 +13,7 @@ This folder is for local Node usage. For Vercel deployment, use the `api/` funct
 
 Server entry:
 
-- `server/openai-proxy.js`
+- `server/ai-proxy.js`
 
 ## Endpoints
 
