@@ -204,6 +204,26 @@
 
         <div class="panel panel--sub">
           <div class="panel__head panel__head--sub">
+            <h3 class="panel__title panel__title--sub">AI Analysis</h3>
+            <span class="pill pill--muted" id="aiStatusPill">GPT Ready</span>
+          </div>
+          <div class="ai-actions">
+            <button class="btn btn--primary" id="btnAiAnalyze" type="button">Run AI Analysis</button>
+            <button class="btn" id="btnAiCopy" type="button">Copy Result</button>
+          </div>
+          <div class="ai-box" id="aiBox">
+            <div class="ai-box__placeholder" id="aiPlaceholder">
+              AI summary will appear here after you click Run AI Analysis.
+            </div>
+            <div class="ai-box__content" id="aiContent" hidden></div>
+          </div>
+          <div class="ai-footnote" id="aiFootnote">
+            Source: current page model inputs and cached match data. Refresh data before use. This is an analytical reference, not guaranteed advice.
+          </div>
+        </div>
+
+        <div class="panel panel--sub">
+          <div class="panel__head panel__head--sub">
               <h3 class="panel__title panel__title--sub">球員成績（優先用賽季/官方統計，缺漏時退回事件彙整）</h3>
             <span class="pill pill--muted">資料源缺漏時可能為 0</span>
           </div>

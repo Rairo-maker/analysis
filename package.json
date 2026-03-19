@@ -1,0 +1,9 @@
+{
+  "name": "future-sports-intel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sports analysis dashboard with OpenAI proxy",
+  "scripts": {
+    "start": "node server/openai-proxy.js"
+  }
+}

@@ -265,6 +265,23 @@ body {
   color: var(--muted);
 }
 
+.pill[data-state="loading"] {
+  color: rgba(0, 229, 255, 0.92);
+  border-color: rgba(0, 229, 255, 0.26);
+}
+
+.pill[data-state="done"],
+.pill[data-state="copied"] {
+  color: rgba(24, 255, 183, 0.92);
+  border-color: rgba(24, 255, 183, 0.26);
+}
+
+.pill[data-state="error"],
+.pill[data-state="warn"] {
+  color: rgba(255, 204, 0, 0.92);
+  border-color: rgba(255, 204, 0, 0.26);
+}
+
 .grid {
   position: relative;
   padding: 14px 16px 0;
@@ -602,6 +619,56 @@ select.field__control {
 .scoreline__rank {
   color: var(--muted2);
   font-size: 11px;
+}
+
+.ai-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px 0;
+}
+
+.ai-box {
+  position: relative;
+  z-index: 1;
+  margin: 12px 14px 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  min-height: 160px;
+  overflow: hidden;
+}
+
+.ai-box__placeholder,
+.ai-box__content {
+  padding: 14px 16px;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.ai-box__placeholder {
+  color: var(--muted);
+}
+
+.ai-box__content {
+  color: rgba(255, 255, 255, 0.92);
+  white-space: pre-wrap;
+}
+
+.ai-footnote {
+  position: relative;
+  z-index: 1;
+  padding: 0 14px 14px;
+  color: var(--muted2);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.btn[disabled] {
+  cursor: wait;
+  opacity: 0.72;
 }
 
 .distrow {

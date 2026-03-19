@@ -64,6 +64,11 @@
     formGrid: $("#formGrid"),
     edgeChips: $("#edgeChips"),
     scorelines: $("#scorelines"),
+    btnAiAnalyze: $("#btnAiAnalyze"),
+    btnAiCopy: $("#btnAiCopy"),
+    aiStatusPill: $("#aiStatusPill"),
+    aiPlaceholder: $("#aiPlaceholder"),
+    aiContent: $("#aiContent"),
     homeTableTitle: $("#homeTableTitle"),
     awayTableTitle: $("#awayTableTitle"),
     homePlayers: $("#homePlayers tbody"),
@@ -74,6 +79,7 @@
     settings: null,
     cache: null,
     events: [],
+    latestAiText: "",
   };
 
   function clamp(value, min, max) {
@@ -132,6 +138,39 @@
     UI.status.dataset.state = kind;
     const statusText = $(".status__text", UI.status);
     if (statusText) statusText.textContent = text;
+  }
+
+  function setAiState(kind, text) {
+    if (!UI.aiStatusPill) return;
+    UI.aiStatusPill.dataset.state = kind;
+    UI.aiStatusPill.textContent = text;
+  }
+
+  function resetAiPanel(message = "AI summary will appear here after you click Run AI Analysis.") {
+    state.latestAiText = "";
+    if (UI.aiPlaceholder) {
+      UI.aiPlaceholder.hidden = false;
+      UI.aiPlaceholder.textContent = message;
+    }
+    if (UI.aiContent) {
+      UI.aiContent.hidden = true;
+      UI.aiContent.textContent = "";
+    }
+    if (UI.btnAiAnalyze) UI.btnAiAnalyze.disabled = false;
+    if (UI.btnAiCopy) UI.btnAiCopy.disabled = true;
+    setAiState("idle", "GPT Ready");
+  }
+
+  function showAiResult(text) {
+    const content = String(text || "").trim();
+    state.latestAiText = content;
+    if (UI.aiPlaceholder) UI.aiPlaceholder.hidden = true;
+    if (UI.aiContent) {
+      UI.aiContent.hidden = false;
+      UI.aiContent.textContent = content || "No AI analysis returned.";
+    }
+    if (UI.btnAiCopy) UI.btnAiCopy.disabled = !content;
+    setAiState("done", content ? "AI Complete" : "No Result");
   }
 
   function formatDateTime(dateText, timeText) {
@@ -771,6 +810,7 @@
     UI.scorelines.innerHTML = "";
     UI.homePlayers.innerHTML = "";
     UI.awayPlayers.innerHTML = "";
+    resetAiPanel(message ? `AI is waiting for match data. ${message}` : undefined);
   }
 
   function goalMapFromCache(cache, teamId) {
@@ -890,6 +930,7 @@
     UI.matchSelect.value = event.idEvent;
     state.settings.selectedEventId = event.idEvent;
     saveSettings(state.settings);
+    resetAiPanel(`AI summary is ready to run for ${event.strHomeTeam || "Home"} vs ${event.strAwayTeam || "Away"}.`);
 
     setStatus("ok", "Analyzing...");
     const model = analyzeMatch(state.cache, state.settings, event);
@@ -1025,10 +1066,108 @@
     for (const element of [UI.apiKeyInput, UI.formNInput, UI.homeAdvInput]) {
       element.addEventListener("change", bindSettingsInputs);
     }
+
+    if (UI.btnAiAnalyze) {
+      UI.btnAiAnalyze.addEventListener("click", async () => {
+        try {
+          UI.btnAiAnalyze.disabled = true;
+          setAiState("loading", "AI Thinking...");
+          if (UI.aiPlaceholder) {
+            UI.aiPlaceholder.hidden = false;
+            UI.aiPlaceholder.textContent = "GPT is analyzing the current match...";
+          }
+          if (UI.aiContent) {
+            UI.aiContent.hidden = true;
+            UI.aiContent.textContent = "";
+          }
+
+          const result = await requestAiAnalysis();
+          showAiResult(result.analysis || "");
+        } catch (error) {
+          const message = String(error?.message || error || "AI analyze failed");
+          if (UI.aiPlaceholder) {
+            UI.aiPlaceholder.hidden = false;
+            UI.aiPlaceholder.textContent = message;
+          }
+          if (UI.aiContent) {
+            UI.aiContent.hidden = true;
+            UI.aiContent.textContent = "";
+          }
+          if (UI.btnAiCopy) UI.btnAiCopy.disabled = true;
+          setAiState("error", "AI Error");
+        } finally {
+          if (UI.btnAiAnalyze) UI.btnAiAnalyze.disabled = false;
+        }
+      });
+    }
+
+    if (UI.btnAiCopy) {
+      UI.btnAiCopy.disabled = true;
+      UI.btnAiCopy.addEventListener("click", async () => {
+        if (!state.latestAiText) return;
+        try {
+          await navigator.clipboard.writeText(state.latestAiText);
+          setAiState("copied", "Copied");
+        } catch {
+          setAiState("warn", "Copy Failed");
+        }
+      });
+    }
   }
+
+  function buildAiPayload() {
+    if (!state.cache || !state.events.length) return null;
+    const selectedId = getSelectedEventId() || state.events[0]?.idEvent || "";
+    const event = state.events.find((item) => item.idEvent === selectedId) || state.events[0];
+    if (!event) return null;
+
+    const model = analyzeMatch(state.cache, state.settings, event);
+    return {
+      sport: String(state.settings?.sport || "soccer").toLowerCase(),
+      match: {
+        id: event.idEvent,
+        homeTeam: event.strHomeTeam,
+        awayTeam: event.strAwayTeam,
+        kickoff: event.dateEvent && event.strTime ? `${event.dateEvent}T${event.strTime}` : event.dateEvent || "",
+        venue: event.strVenue || "",
+      },
+      modelInputs: {
+        homeWinPct: Math.round(model.matrix.pHome),
+        drawPct: Math.round(model.matrix.pDraw),
+        awayWinPct: Math.round(model.matrix.pAway),
+        expectedGoalsHome: Number(model.lambdaHome.toFixed(2)),
+        expectedGoalsAway: Number(model.lambdaAway.toFixed(2)),
+        projectedScore: `${model.projected.home}-${model.projected.away}`,
+      },
+      playerNotes: [],
+    };
+  }
+
+  async function requestAiAnalysis(payload = buildAiPayload()) {
+    if (!payload) throw new Error("No active match payload");
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok || !data?.ok) {
+      throw new Error(data?.details || data?.error || "AI analyze failed");
+    }
+    return {
+      ...data,
+      analysis: String(data.analysis || "").trim(),
+    };
+  }
+
+  window.futureSportsIntel = {
+    buildAiPayload,
+    requestAiAnalysis,
+  };
 
   async function init() {
     setStatus("warn", "Loading...");
+    resetAiPanel();
     renderLeagueControls(loadSettings());
     wireEvents();
     await loadCacheAndEvents({ mode: "auto" });
