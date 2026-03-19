@@ -1,11 +1,12 @@
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.4";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 export async function GET() {
   return new Response(
     JSON.stringify({
       ok: true,
-      hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY),
-      model: OPENAI_MODEL,
+      provider: "gemini",
+      hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
+      model: GEMINI_MODEL,
     }),
     {
       headers: {

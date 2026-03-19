@@ -6,9 +6,8 @@ const { buildSystemPrompt, buildUserPrompt } = require("./prompts");
 
 const ROOT = path.resolve(__dirname, "..");
 const PORT = Number(process.env.PORT || 3000);
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.4";
-const OPENAI_REASONING_EFFORT = process.env.OPENAI_REASONING_EFFORT || "medium";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -74,15 +73,16 @@ async function serveStatic(req, res, url) {
 async function handleHealth(res) {
   sendJson(res, 200, {
     ok: true,
-    hasOpenAIKey: Boolean(OPENAI_API_KEY),
-    model: OPENAI_MODEL,
+    provider: "gemini",
+    hasGeminiKey: Boolean(GEMINI_API_KEY),
+    model: GEMINI_MODEL,
   });
 }
 
 async function handleAnalyze(req, res) {
-  if (!OPENAI_API_KEY) {
+  if (!GEMINI_API_KEY) {
     sendJson(res, 500, {
-      error: "OPENAI_API_KEY is missing",
+      error: "GEMINI_API_KEY is missing",
       hint: "Create a .env file or set the environment variable before starting the server.",
     });
     return;
@@ -92,27 +92,37 @@ async function handleAnalyze(req, res) {
     const rawBody = await readBody(req);
     const payload = rawBody ? JSON.parse(rawBody) : {};
     const sport = String(payload?.sport || "soccer").toLowerCase();
+    const requestBody = {
+      system_instruction: {
+        parts: [{ text: buildSystemPrompt(sport) }],
+      },
+      contents: [
+        {
+          parts: [{ text: buildUserPrompt(payload) }],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.4,
+        maxOutputTokens: 1024,
+      },
+    };
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
+      {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "x-goog-api-key": GEMINI_API_KEY,
       },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        reasoning: { effort: OPENAI_REASONING_EFFORT },
-        input: [
-          { role: "system", content: [{ type: "input_text", text: buildSystemPrompt(sport) }] },
-          { role: "user", content: [{ type: "input_text", text: buildUserPrompt(payload) }] },
-        ],
-      }),
-    });
+      body: JSON.stringify(requestBody),
+    }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
       sendJson(res, response.status, {
-        error: "OpenAI request failed",
+        error: "Gemini request failed",
         details: errorText,
       });
       return;
@@ -120,10 +130,8 @@ async function handleAnalyze(req, res) {
 
     const data = await response.json();
     const outputText =
-      data.output_text ||
-      data.output
-        ?.flatMap((item) => item.content || [])
-        ?.filter((content) => content.type === "output_text")
+      data.candidates?.[0]?.content?.parts
+        ?.filter((content) => typeof content?.text === "string")
         ?.map((content) => content.text)
         ?.join("\n")
         ?.trim() ||
@@ -131,7 +139,8 @@ async function handleAnalyze(req, res) {
 
     sendJson(res, 200, {
       ok: true,
-      model: OPENAI_MODEL,
+      provider: "gemini",
+      model: GEMINI_MODEL,
       analysis: outputText,
       raw: data,
     });

@@ -1,4 +1,4 @@
-# OpenAI Proxy
+# Gemini Proxy
 
 This folder is for local Node usage. For Vercel deployment, use the `api/` functions:
 
@@ -8,7 +8,7 @@ This folder is for local Node usage. For Vercel deployment, use the `api/` funct
 ## Start
 
 1. Copy `.env.example` to `.env`
-2. Fill `OPENAI_API_KEY`
+2. Fill `GEMINI_API_KEY`
 3. Run `npm start`
 
 Server entry:
@@ -24,9 +24,8 @@ Server entry:
 
 Set these variables in Vercel Project Settings:
 
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
-- `OPENAI_REASONING_EFFORT`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
 
 ## Request body example
 
@@ -57,7 +56,8 @@ Set these variables in Vercel Project Settings:
 ```json
 {
   "ok": true,
-  "model": "gpt-5.4",
+  "provider": "gemini",
+  "model": "gemini-2.5-flash",
   "analysis": "..."
 }
 ```

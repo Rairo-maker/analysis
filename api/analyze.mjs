@@ -1,7 +1,6 @@
 import { buildSystemPrompt, buildUserPrompt } from "./_lib/prompts.mjs";
 
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.4";
-const OPENAI_REASONING_EFFORT = process.env.OPENAI_REASONING_EFFORT || "medium";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 function json(data, init = {}) {
   return new Response(JSON.stringify(data), {
@@ -22,11 +21,11 @@ async function readJson(request) {
 }
 
 export async function POST(request) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return json(
       {
-        error: "OPENAI_API_KEY is missing",
+        error: "GEMINI_API_KEY is missing",
         hint: "Set the environment variable in Vercel Project Settings.",
       },
       { status: 500 }
@@ -36,40 +35,42 @@ export async function POST(request) {
   try {
     const payload = await readJson(request);
     const sport = String(payload?.sport || "soccer").toLowerCase();
+    const body = {
+      system_instruction: {
+        parts: [{ text: buildSystemPrompt(sport) }],
+      },
+      contents: [
+        {
+          parts: [{ text: buildUserPrompt(payload) }],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.4,
+        maxOutputTokens: 1024,
+      },
+    };
 
-    const upstream = await fetch("https://api.openai.com/v1/responses", {
+    const upstream = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
+      {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        authorization: `Bearer ${apiKey}`,
+        "x-goog-api-key": apiKey,
       },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        reasoning: { effort: OPENAI_REASONING_EFFORT },
-        input: [
-          {
-            role: "system",
-            content: [{ type: "input_text", text: buildSystemPrompt(sport) }],
-          },
-          {
-            role: "user",
-            content: [{ type: "input_text", text: buildUserPrompt(payload) }],
-          },
-        ],
-      }),
-    });
+      body: JSON.stringify(body),
+    }
+    );
 
     if (!upstream.ok) {
       const details = await upstream.text();
-      return json({ error: "OpenAI request failed", details }, { status: upstream.status });
+      return json({ error: "Gemini request failed", details }, { status: upstream.status });
     }
 
     const data = await upstream.json();
     const analysis =
-      data.output_text ||
-      data.output
-        ?.flatMap((item) => item.content || [])
-        ?.filter((item) => item.type === "output_text")
+      data.candidates?.[0]?.content?.parts
+        ?.filter((item) => typeof item?.text === "string")
         ?.map((item) => item.text)
         ?.join("\n")
         ?.trim() ||
@@ -77,7 +78,8 @@ export async function POST(request) {
 
     return json({
       ok: true,
-      model: OPENAI_MODEL,
+      provider: "gemini",
+      model: GEMINI_MODEL,
       analysis,
       raw: data,
     });
